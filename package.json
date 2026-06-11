@@ -1,0 +1,13 @@
+{
+  "name": "slyzera-multiplayer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Slyzera browser game with a lightweight WebSocket multiplayer server.",
+  "main": "slyzera_multiplayer_server.js",
+  "scripts": {
+    "start": "node slyzera_multiplayer_server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
