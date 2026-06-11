@@ -5,7 +5,7 @@ const crypto = require("crypto");
 
 const PORT = Number(process.env.PORT || 8080);
 const ROOT = __dirname;
-const CLIENT_FILE = path.join(ROOT, "slyzera_game_shield45_catdog_ears_fixed.html");
+const CLIENT_FILE = path.join(ROOT, "index.html");
 const clients = new Map();
 const SNAPSHOT_MS = 50;
 const CLIENT_TIMEOUT_MS = 8000;
