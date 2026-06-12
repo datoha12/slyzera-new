@@ -147,6 +147,7 @@ function runServerCollisions() {
   for (const [id, client] of clients) {
     const p = client.state;
     if (!p || !p.alive || !p.segments || !p.segments.length) continue;
+    if ((p.spawnGrace || 0) > 0) continue; // спавн-защита — не убиваем новичка
     const head = p.segments[0];
     const hitR = (p.radius || 10) * 0.78;
 
@@ -286,9 +287,9 @@ server.on("upgrade", (req, socket) => {
     client.buffer = decoded.rest;
     for (const msg of decoded.messages) {
       if (msg.type === "state" && msg.player) {
-        const wasAlive = client.state?.alive;
         client.state = { ...msg.player, id, serverSeenAt: Date.now() };
-        broadcast({ type: "player", player: client.state, serverTime: Date.now() }, id);
+        // Не ретранслируем мгновенно — единый снапшот 20Гц ниже даёт ровный поток
+        // без двойных обновлений и рывков интерполяции.
       }
     }
   });
@@ -303,19 +304,22 @@ server.listen(PORT, "0.0.0.0", () => {
 });
 
 // ─── Snapshot helper ──────────────────────────────────────────────────────────
+// Лёгкий снапшот: только голова. Тело бота клиент строит сам (тянущийся хвост).
+// Это в ~30 раз меньше трафика, чем слать все сегменты.
 function botSnapshot(b) {
+  const head = b.segments[0] || { x: 0, y: 0 };
   return {
     id: b.id,
     isBot: true,
     name: b.name,
     typeId: b.typeId,
-    accessory: b.accessory,
-    angle: b.angle,
-    score: b.score,
-    desiredLength: b.desiredLength,
+    angle: Math.round(b.angle * 1000) / 1000,
+    score: Math.round(b.score),
+    desiredLength: Math.round(b.desiredLength),
     radius: b.radius,
     alive: b.alive,
-    segments: b.segments.slice(0, 80).map(s => ({ x: Math.round(s.x), y: Math.round(s.y) })),
+    x: Math.round(head.x),
+    y: Math.round(head.y),
   };
 }
 
